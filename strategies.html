@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Strategy Studio &middot; Strategies</title>
+    <style>
+        :root {
+            --blue:#007AC1;        /* OKC Thunder blue */
+            --blue-deep:#0056A0;
+            --sunset:#EF3B24;      /* Thunder orange-red accent */
+            --ink:#0A0A0A;
+            --paper:#FFFFFF;
+            --silver:#5B6B78;
+            --muted:#8A97A2;
+            --line:4px solid var(--ink);
+            --line-thin:3px solid var(--ink);
+        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin:0; padding:0; }
+        body {
+            font-family: "Arial Black","Helvetica Neue",Helvetica,Arial,sans-serif;
+            background: var(--blue);
+            color: var(--ink);
+            line-height: 1.5;
+            min-height: 100vh; min-height: 100dvh;
+            display: flex; flex-direction: column;
+        }
+        /* utility face for body copy */
+        .sans { font-family: Arial, Helvetica, sans-serif; }
+
+        /* ---------- header ---------- */
+        .header {
+            padding: 14px 16px 0;
+            display: flex; align-items: center; gap: 12px;
+        }
+        .logo {
+            flex:0 0 auto; width:48px; height:48px; background:var(--ink);
+            border:var(--line); box-shadow:5px 5px 0 var(--ink);
+            display:flex; align-items:center; justify-content:center;
+            cursor:pointer; user-select:none;
+        }
+        .logo svg { width:28px; height:28px; }
+        .logo-text { flex:1; display:flex; flex-direction:column; }
+        .logo-title {
+            font-size: 22px; line-height:.9; text-transform: uppercase; letter-spacing:-.5px;
+        }
+        .logo-sub {
+            font-family: Arial, sans-serif; font-weight:bold; font-size:10px;
+            letter-spacing:2px; text-transform:uppercase; color:var(--blue-deep); margin-top:3px;
+        }
+        .header-count {
+            font-family: Arial, sans-serif; font-size: 11px; font-weight: bold;
+            color: var(--ink); letter-spacing: 1px; text-transform: uppercase;
+            background:var(--paper); border:var(--line-thin); padding:5px 9px;
+            box-shadow:3px 3px 0 var(--ink); white-space:nowrap;
+        }
+        .tagline {
+            font-family: Arial, sans-serif; font-weight:bold;
+            font-size: 12px; color: var(--paper); padding: 10px 16px 12px; letter-spacing: .5px;
+            text-transform:uppercase;
+        }
+
+        /* ---------- thumb zone (sticky controls) ---------- */
+        .thumb-zone {
+            background: var(--blue);
+            padding: 4px 16px 14px;
+            position: sticky; top: 0; z-index: 100;
+            border-bottom: var(--line);
+        }
+        .primary-action {
+            width: 100%; padding: 18px 24px; border: var(--line); border-radius: 0;
+            background: var(--sunset); color: var(--paper);
+            font-family: "Arial Black",sans-serif; font-weight: 900; font-size: 20px;
+            letter-spacing: 1px; text-transform: uppercase; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            box-shadow: 6px 6px 0 var(--ink);
+            transition: transform .05s, box-shadow .05s;
+        }
+        .primary-action:active { transform: translate(4px,4px); box-shadow: 2px 2px 0 var(--ink); }
+        .primary-action .btn-icon { font-size: 20px; }
+        .primary-action.spinning .btn-icon { animation: spin-star 0.5s ease-out; }
+        @keyframes spin-star {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(360deg) scale(1.4); }
+            100% { transform: rotate(720deg) scale(1); }
+        }
+
+        .filter-row {
+            display: flex; gap: 8px; margin-top: 12px;
+            overflow-x: auto; padding-bottom: 4px;
+            -webkit-overflow-scrolling: touch; scrollbar-width: none;
+        }
+        .filter-row::-webkit-scrollbar { display: none; }
+        .filter-chip {
+            padding: 8px 14px; border: var(--line-thin); border-radius: 0;
+            background: var(--paper); color: var(--ink);
+            font-family: Arial, sans-serif; font-weight: bold; font-size: 12px;
+            letter-spacing: .5px; text-transform: uppercase; cursor: pointer;
+            white-space: nowrap; flex-shrink: 0; transition: transform .05s;
+            box-shadow:3px 3px 0 var(--ink);
+        }
+        .filter-chip:active { transform: translate(2px,2px); box-shadow:1px 1px 0 var(--ink); }
+        .filter-chip.active {
+            background: var(--ink); color: var(--paper);
+        }
+
+        .tabs {
+            display: flex; margin-top: 12px; gap:8px;
+        }
+        .tab {
+            flex: 1; padding: 10px 4px; border: var(--line-thin); background: var(--paper); color: var(--ink);
+            font-family: Arial, sans-serif; font-weight: bold; font-size: 12px;
+            letter-spacing: .5px; text-transform: uppercase; cursor: pointer;
+            box-shadow:3px 3px 0 var(--ink); transition: transform .05s;
+        }
+        .tab:active { transform: translate(2px,2px); box-shadow:1px 1px 0 var(--ink); }
+        .tab.active { background: var(--ink); color: var(--paper); }
+        .tab .badge {
+            background: var(--sunset); color: white; font-size: 10px;
+            padding: 1px 6px; margin-left: 4px; font-weight: bold; display:inline-block;
+        }
+        .tab.active .badge { background:var(--sunset); }
+
+        .search-row { margin-top: 12px; position: relative; }
+        .search-input {
+            width: 100%; padding: 12px 14px 12px 40px;
+            border: var(--line-thin); border-radius: 0;
+            background: var(--paper); color: var(--ink);
+            font-size: 15px; font-family: Arial, sans-serif; font-weight:600;
+            box-shadow:3px 3px 0 var(--ink);
+        }
+        .search-input::placeholder { color: var(--muted); font-weight:bold; text-transform:uppercase; font-size:13px; letter-spacing:.5px; }
+        .search-input:focus { outline: none; }
+        .search-icon {
+            position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
+            color: var(--ink); font-size: 16px; pointer-events: none; z-index:1;
+        }
+
+        .session-banner {
+            display: none; background: var(--ink); border: var(--line);
+            padding: 11px 14px; margin-top: 12px; box-shadow:4px 4px 0 var(--sunset);
+            align-items: center; justify-content: space-between; gap: 8px;
+        }
+        .session-banner.visible { display: flex; }
+        .session-label {
+            font-family: Arial, sans-serif; font-weight: bold; font-size: 12px;
+            letter-spacing: 1px; text-transform: uppercase; color: var(--paper);
+        }
+        .session-count {
+            font-family: Arial, sans-serif; font-weight: bold;
+            font-size: 12px; color: var(--muted);
+        }
+        .session-clear {
+            background: var(--sunset); border: none; color: var(--paper); font-size: 12px;
+            cursor: pointer; padding: 5px 10px; font-family:Arial,sans-serif; font-weight:bold;
+            text-transform:uppercase; letter-spacing:.5px;
+        }
+
+        /* ---------- strategy list ---------- */
+        .strategy-list { flex: 1; padding: 14px 16px 120px; background:var(--blue); }
+        .list-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .results-label {
+            font-family: Arial, sans-serif; font-size: 12px; font-weight: bold;
+            letter-spacing: 1px; text-transform: uppercase; color: var(--paper);
+        }
+        .results-label strong { color: var(--paper); font-size:15px; }
+
+        .strategy-card {
+            background: var(--paper); border: var(--line); box-shadow:5px 5px 0 var(--ink);
+            padding: 14px 14px 12px;
+            margin-bottom: 14px; transition: box-shadow .1s, transform .1s;
+        }
+        .strategy-card.highlighted {
+            box-shadow: 5px 5px 0 var(--sunset);
+            animation: card-pop 0.5s ease-out;
+        }
+        @keyframes card-pop {
+            0% { transform: scale(0.97); }
+            60% { transform: scale(1.01); }
+            100% { transform: scale(1); }
+        }
+        .card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+        .strategy-name {
+            font-family: "Arial Black",sans-serif; font-size: 19px; font-weight: 900;
+            margin: 0 0 5px 0; color: var(--ink); line-height: 1.05;
+            letter-spacing: -.3px; text-transform: uppercase;
+        }
+        .card-actions { display: flex; gap: 6px; flex-shrink: 0; }
+        .session-btn, .fav-btn {
+            background: var(--paper); border: var(--line-thin); font-size: 16px; cursor: pointer;
+            padding: 4px 6px; line-height: 1; transition: transform .05s;
+        }
+        .session-btn:active, .fav-btn:active { transform: translate(2px,2px); }
+        .session-btn { opacity: .4; filter: grayscale(1); }
+        .session-btn.active { opacity: 1; filter: none; background:var(--ink); }
+        .fav-btn { color: var(--silver); }
+        .fav-btn.active { color: var(--ink); background:var(--sunset); }
+        .fav-btn.active { color: var(--paper); }
+
+        .strategy-summary {
+            font-family: Arial, sans-serif; font-weight:500;
+            font-size: 14px; color: var(--silver); margin: 0 0 12px 0; line-height: 1.45;
+            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+        }
+        .strategy-meta { display: flex; gap: 6px; flex-wrap: wrap; }
+        .meta-pill {
+            font-family: Arial, sans-serif; font-size: 10px; font-weight: bold;
+            letter-spacing: .5px; text-transform: uppercase; padding: 4px 8px; border-radius: 0;
+            background: var(--blue); color: var(--paper); border: 2px solid var(--ink);
+        }
+        .meta-pill.time {
+            background: var(--paper); color: var(--ink);
+        }
+        .card-expanded .strategy-summary { -webkit-line-clamp: unset; overflow: visible; }
+        .procedure { display: none; margin-top: 14px; padding-top: 14px; border-top: var(--line-thin); }
+        .card-expanded .procedure { display: block; animation: fade-in 0.2s ease; }
+        @keyframes fade-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+        .procedure-title {
+            font-family: Arial, sans-serif; font-size: 11px; font-weight: bold;
+            text-transform: uppercase; letter-spacing: 1.5px; color: var(--sunset); margin: 0 0 10px 0;
+        }
+        .procedure ol { margin: 0; padding-left: 20px; color: var(--silver); font-size: 14px; font-family:Arial,sans-serif; font-weight:500; }
+        .procedure li { margin-bottom: 7px; line-height: 1.45; }
+        .procedure li::marker { color: var(--blue); font-weight: 900; }
+        .used-row { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; gap:10px; }
+        .used-btn {
+            background: var(--ink); border: none; color: var(--paper);
+            font-family: Arial, sans-serif; font-weight: bold;
+            font-size: 12px; letter-spacing: .5px; text-transform: uppercase;
+            padding: 8px 12px; cursor: pointer; transition: transform .05s;
+        }
+        .used-btn:active { transform: scale(.96); background:var(--sunset); }
+        .used-count {
+            font-family: Arial, sans-serif; font-size: 11px; font-weight: bold;
+            color: var(--muted); letter-spacing: .5px; text-transform: uppercase;
+        }
+        .used-count.has-uses { color: var(--sunset); }
+        .view-link {
+            display: inline-flex; align-items: center; gap: 4px; margin-top: 12px;
+            color: var(--blue-deep); font-family: Arial, sans-serif; font-size: 12px;
+            font-weight: bold; letter-spacing: .5px; text-transform: uppercase;
+            text-decoration: none; border-bottom:2px solid var(--blue-deep); padding-bottom:1px;
+        }
+
+        /* ---------- pick-one toast ---------- */
+        .ai-toast {
+            position: fixed; top: 50%; left: 50%;
+            transform: translate(-50%, -50%) scale(0.85);
+            background: var(--paper); border: var(--line); box-shadow: 8px 8px 0 var(--ink);
+            padding: 20px 22px; text-align: center; z-index: 1000;
+            opacity: 0; pointer-events: none; transition: all 0.2s ease;
+            max-width: 280px; width: calc(100% - 48px);
+        }
+        .ai-toast.visible { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        .ai-toast-emoji { font-size: 30px; margin-bottom: 8px; }
+        .ai-toast-name {
+            font-family: "Arial Black",sans-serif; font-size: 19px; font-weight: 900;
+            text-transform: uppercase; letter-spacing: -.3px; color: var(--ink); margin-bottom: 8px; line-height:1;
+        }
+        .ai-toast-text { font-family:Arial,sans-serif; font-weight:600; font-size: 14px; color: var(--silver); line-height: 1.45; }
+
+        /* ---------- empty state ---------- */
+        .empty-state { text-align: center; padding: 48px 20px; }
+        .empty-state-inner {
+            background:var(--paper); border:var(--line); box-shadow:6px 6px 0 var(--ink);
+            padding:32px 20px; display:inline-block; max-width:320px;
+        }
+        .empty-icon { font-size: 36px; margin-bottom: 12px; }
+        .empty-state h3 {
+            font-family: "Arial Black",sans-serif; font-weight: 900; font-size: 18px;
+            text-transform: uppercase; letter-spacing: -.3px; margin: 0 0 6px; color: var(--ink);
+        }
+        .empty-state p { margin: 0; font-size: 14px; font-family:Arial,sans-serif; font-weight:500; color:var(--silver); }
+
+        /* ---------- deck view ---------- */
+        .deck-view {
+            display: none; position: fixed; inset: 0; background: var(--blue);
+            z-index: 200; flex-direction: column; padding: 16px;
+        }
+        .deck-view.visible { display: flex; }
+        .deck-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; gap:12px; }
+        .deck-title {
+            font-family: "Arial Black",sans-serif; font-weight: 900; font-size: 24px;
+            text-transform: uppercase; letter-spacing: -.5px; color: var(--paper);
+        }
+        .deck-close {
+            background: var(--paper); border: var(--line); box-shadow:4px 4px 0 var(--ink);
+            color: var(--ink); font-family: "Arial Black",sans-serif; font-weight: 900;
+            font-size: 13px; letter-spacing: 1px; text-transform: uppercase; padding: 10px 16px; cursor: pointer;
+        }
+        .deck-close:active { transform:translate(3px,3px); box-shadow:1px 1px 0 var(--ink); }
+        .deck-cards { flex: 1; overflow-y: auto; }
+        .deck-card {
+            background: var(--paper); border: var(--line);
+            box-shadow:4px 4px 0 var(--ink); padding: 14px; margin-bottom: 12px;
+        }
+        .deck-card-name {
+            font-family: "Arial Black",sans-serif; font-weight: 900; font-size: 17px;
+            text-transform: uppercase; letter-spacing: -.3px; color: var(--ink); margin-bottom: 5px;
+        }
+        .deck-card-summary { font-family:Arial,sans-serif; font-weight:500; font-size: 13px; color: var(--silver); line-height: 1.45; }
+        .deck-card-remove {
+            background: var(--sunset); border: none; color: var(--paper); font-size: 13px;
+            cursor: pointer; float: right; margin: 0 0 8px 10px; padding:3px 8px; font-weight:bold;
+        }
+
+        /* ---------- easter egg (SGA) ---------- */
+        .egg-overlay {
+            display: none; position: fixed; inset: 0; z-index: 500;
+            background: rgba(0,86,160,0.92); align-items: center; justify-content: center; padding:20px;
+        }
+        .egg-overlay.visible { display: flex; }
+        .egg-modal {
+            background: var(--paper); border: 5px solid var(--ink); box-shadow: 12px 12px 0 var(--ink);
+            padding: 28px 24px 22px; max-width: 340px; width: 100%;
+            text-align: center; position: relative;
+            animation: egg-entrance 0.4s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        @keyframes egg-entrance {
+            0% { transform: scale(0.7) rotate(-2deg); opacity: 0; }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+        .egg-close {
+            position: absolute; top: 8px; right: 10px;
+            background: var(--ink); border: none; color: var(--paper); font-size: 15px;
+            cursor: pointer; width:28px; height:28px; line-height:1;
+        }
+        .egg-belt { font-size: 52px; margin-bottom: 6px; animation: belt-spin 0.8s ease-out; }
+        @keyframes belt-spin {
+            0% { transform: rotate(-15deg) scale(0.5); opacity: 0; }
+            70% { transform: rotate(5deg) scale(1.1); opacity: 1; }
+            100% { transform: rotate(0deg) scale(1); }
+        }
+        .egg-eyebrow {
+            font-family: Arial, sans-serif; font-weight: bold; font-size: 10px;
+            letter-spacing: 2.5px; text-transform: uppercase; color: var(--sunset); margin-bottom: 6px;
+        }
+        .egg-name {
+            font-family: "Arial Black",sans-serif; font-weight: 900; font-size: 26px;
+            text-transform: uppercase; letter-spacing: -.5px; color: var(--ink); margin: 0 0 6px; line-height: 1;
+        }
+        .egg-quote {
+            font-family:Arial,sans-serif; font-size: 13px; color: var(--blue-deep); line-height:1.4;
+            font-weight:600; font-style: italic; margin-bottom: 14px;
+            border-left:4px solid var(--sunset); padding-left:10px; text-align:left;
+        }
+        .egg-summary { font-family:Arial,sans-serif; font-weight:500; font-size: 14px; color: var(--silver); line-height: 1.55; margin-bottom: 14px; text-align:left; }
+        .egg-steps { text-align: left; margin: 0 0 14px; padding-left: 20px; color: var(--silver); font-size: 13px; font-family:Arial,sans-serif; font-weight:500; }
+        .egg-steps li { margin-bottom: 7px; line-height: 1.45; }
+        .egg-steps li::marker { color: var(--blue); font-weight: 900; }
+        .egg-footer {
+            font-family: Arial, sans-serif; font-size: 11px; font-weight: bold;
+            letter-spacing: 1px; text-transform: uppercase; color: var(--muted);
+            border-top: var(--line-thin); padding-top: 12px; text-align:left;
+        }
+        .egg-footer span { color: var(--sunset); }
+
+        @media (prefers-reduced-motion:reduce){ *{animation:none !important;} }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo" id="logoBtn" title="Strategy Studio">
+            <svg viewBox="0 0 100 100" fill="none" aria-hidden="true">
+              <path d="M50 4c3 22 22 41 46 46-24 5-43 24-46 46-3-22-22-41-46-46 24-5 43-24 46-46z" fill="#fff"/>
+            </svg>
+        </div>
+        <div class="logo-text">
+            <span class="logo-title">Strategy Studio</span>
+            <span class="logo-sub">K20 LEARN &middot; OETT</span>
+        </div>
+        <span class="header-count" id="counter">150 strategies</span>
+    </div>
+
+    <!-- Easter Egg Modal (SGA) -->
+    <div class="egg-overlay" id="eggOverlay" onclick="closeEgg(event)">
+        <div class="egg-modal">
+            <button class="egg-close" onclick="document.getElementById('eggOverlay').classList.remove('visible')">&times;</button>
+            <div class="egg-belt">&#127942;</div>
+            <div class="egg-eyebrow">Very, Very, Very Hard to Stop</div>
+            <div class="egg-name">The Unstoppable Standard</div>
+            <div class="egg-quote">"I don't feel like I'm unstoppable. I just feel like I'm very very very very very very hard, very hard, very very hard to stop." &mdash; SGA</div>
+            <div class="egg-summary">
+                Not the flashiest strategy in the deck. Just the one students can't get around. Relentless, repeatable, and quietly effective every single time you run it.
+            </div>
+            <ol class="egg-steps">
+                <li>Pick the concept your students most need to lock in for good</li>
+                <li>Run the same core move on repeat &mdash; low drama, high consistency</li>
+                <li>No hero shots, no gimmicks. Just steady reps that build mastery</li>
+                <li>Adjust the pace, never the fundamentals</li>
+                <li>When it works game after game, you've found your go-to</li>
+            </ol>
+            <div class="egg-footer">
+                The best strategy isn't unstoppable. <span>It's very, very hard to stop.</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="tagline">Instructional strategies for authentic learning</div>
+
+    <div class="thumb-zone">
+        <button class="primary-action" id="primaryBtn">
+            <span class="btn-icon">&#9733;</span>
+            <span>Pick one for me</span>
+        </button>
+        <div class="filter-row">
+            <button class="filter-chip" data-filter="quick">&#9889; Quick</button>
+            <button class="filter-chip" data-filter="discussion">&#128172; Discussion</button>
+            <button class="filter-chip" data-filter="reflection">&#129704; Reflection</button>
+            <button class="filter-chip" data-filter="movement">&#127939; Movement</button>
+            <button class="filter-chip" data-filter="writing">&#9997;&#65039; Writing</button>
+        </div>
+        <div class="tabs">
+            <button class="tab active" data-tab="all">All</button>
+            <button class="tab" data-tab="saved">Saved <span class="badge" id="savedBadge">0</span></button>
+            <button class="tab" data-tab="session">Session <span class="badge" id="sessionBadge">0</span></button>
+        </div>
+        <div class="search-row">
+            <span class="search-icon">&#128269;</span>
+            <input type="text" class="search-input" id="searchInput" placeholder="Search strategies...">
+        </div>
+        <div class="session-banner" id="sessionBanner">
+            <span class="session-label">&#128203; Session deck</span>
+            <span class="session-count" id="sessionCountLabel">0 strategies</span>
+            <button class="session-clear" id="viewDeckBtn">View</button>
+        </div>
+    </div>
+
+    <div class="strategy-list">
+        <div class="list-header">
+            <span class="results-label" id="resultsLabel"><strong>150</strong> strategies</span>
+        </div>
+        <div id="cards"></div>
+    </div>
+
+    <div class="ai-toast" id="aiToast">
+        <div class="ai-toast-emoji" id="toastEmoji">&#9733;</div>
+        <div class="ai-toast-name" id="toastName"></div>
+        <div class="ai-toast-text" id="toastText"></div>
+    </div>
+
+    <div class="deck-view" id="deckView">
+        <div class="deck-header">
+            <span class="deck-title">&#128203; Today's Session</span>
+            <button class="deck-close" id="closeDeck">Close</button>
+        </div>
+        <div class="deck-cards" id="deckCards"></div>
+    </div>
+
+<script>
+const strategies = [
+  {id:1,name:"20 Questions Mingle",summary:"Students ask yes/no questions to identify the topic card on their back. Active vocabulary review.",tags:["movement","discussion"],time:"10-20 min",procedure:["Place topic cards on students' backs","Students ask yes/no questions — one per classmate","Continue until they identify their topic","Debrief vocabulary and strategies used"],url:"https://learn.k20center.ou.edu/strategy/3615"},
+  {id:2,name:"30 Second Spotlight",summary:"Each student creates one slide and presents for exactly 30 seconds on content or a personal passion.",tags:["discussion","quick"],time:"30+ min",procedure:["Students pick a topic and create one slide","Enforce exactly 30 seconds — no more, no less","Class listens actively and asks one follow-up question","Debrief: what had to be cut, and why?"],url:"https://learn.k20center.ou.edu/strategy/3748"},
+  {id:3,name:"30-Second Expert",summary:"Students become experts on a topic and explain it to a partner in exactly 30 seconds.",tags:["discussion","quick"],time:"10-20 min",procedure:["Assign or choose expert topics","Prepare 30-second explanation","Partner A explains while Partner B listens","Partner B asks one question, then switch roles"],url:"https://learn.k20center.ou.edu/strategy/1048"},
+  {id:4,name:"3-2-1",summary:"Students summarize by writing 3 things learned, 2 interesting things, and 1 remaining question.",tags:["reflection","writing","quick"],time:"< 10 min",procedure:["Provide or draw a 3-2-1 template","Write 3 things learned","Write 2 things that were interesting","Write 1 question that remains"],url:"https://learn.k20center.ou.edu/strategy/117"},
+  {id:5,name:"4-2-1",summary:"Identify 4 main ideas, pair to narrow to 2, then groups of 4 agree on the single most important.",tags:["discussion","reflection"],time:"20-30 min",procedure:["Individually identify 4 important ideas","Pair up and narrow to 2 together","Groups of 4 agree on 1 most important","Free-write about the selected big idea"],url:"https://learn.k20center.ou.edu/strategy/142"},
+  {id:6,name:"5W Cube",summary:"Roll a cube with who, what, when, where, why, and how to generate open-ended questions about content.",tags:["discussion","quick"],time:"10-20 min",procedure:["Obtain or create a 5W cube","Students roll and read the face-up prompt","Answer using evidence from the content","Groups discuss and compare answers"],url:"https://learn.k20center.ou.edu/strategy/81"},
+  {id:7,name:"8-Up",summary:"Large-group consensus strategy where ideas are systematically narrowed to eight agreed-upon points.",tags:["discussion"],time:"20-30 min",procedure:["Each student writes several ideas independently","Small groups consolidate to 8 together","Groups share and compare their 8","Class works toward broader consensus"],url:"https://learn.k20center.ou.edu/strategy/2494"},
+  {id:8,name:"A-CLAP",summary:"Evaluate source reliability: Author, Currency, Links, Authority, and Purpose.",tags:["reflection"],time:"10-20 min",procedure:["Examine the Author's credentials","Check Currency — how recent is this?","Review Links to other credible sources","Assess Authority and identify Purpose"],url:"https://learn.k20center.ou.edu/strategy/183"},
+  {id:9,name:"ABC Graffiti",summary:"Groups brainstorm words for each letter of the alphabet related to a topic, rotating through posters.",tags:["discussion","movement"],time:"20-30 min",procedure:["Create A-Z posters around the room","Groups brainstorm one word per letter","Rotate to the next poster on signal","Create a summary statement from the collection"],url:"https://learn.k20center.ou.edu/strategy/96"},
+  {id:10,name:"Academic Action News",summary:"Small groups format a news segment to share how content is applicable to themselves and their community.",tags:["discussion","writing"],time:"20-30 min",procedure:["Present a problem or essential question","Groups plan a 2-minute news segment","Assign anchor, reporter, and expert roles","Perform or record and debrief as a class"],url:"https://learn.k20center.ou.edu/strategy/4663"},
+  {id:11,name:"Add, Remove, Move, Substitute (ARMS)",summary:"Revision mnemonic: Add needed content, Remove fluff, Move sections for flow, Substitute weak words.",tags:["writing","reflection"],time:"10-20 min",procedure:["Read draft with ARMS checklist in hand","Add missing information","Remove redundant or off-topic content","Move sections for better flow, then Substitute weak words"],url:"https://learn.k20center.ou.edu/strategy/3485"},
+  {id:12,name:"Affinity Process",summary:"Students respond to a prompt then work in groups to cluster responses into self-organizing themes.",tags:["discussion","reflection"],time:"10-20 min",procedure:["Pose a broad open-ended prompt","Students write individual responses on sticky notes","Groups cluster notes by emergent theme","Name the clusters and discuss what patterns mean"],url:"https://learn.k20center.ou.edu/strategy/87"},
+  {id:13,name:"Agreement Circles",summary:"Students form concentric circles and debate positions through persuasive communication and movement.",tags:["movement","discussion"],time:"10-20 min",procedure:["Present a controversial statement","Students form inner/outer circles by position","Inner circle shares reasoning aloud","Outer circle responds, then roles reverse"],url:"https://learn.k20center.ou.edu/strategy/157"},
+  {id:14,name:"Aha! Huh? Uh-uh.",summary:"Reflect by identifying moments of insight (Aha!), confusion (Huh?), and disagreement (Uh-uh).",tags:["reflection","quick"],time:"< 10 min",procedure:["Introduce the three response categories","Students read or experience content","Jot thoughts in each category","Share Aha! moments first, then address the others"],url:"https://learn.k20center.ou.edu/strategy/4414"},
+  {id:15,name:"AI Prompt Writing (C.O.N.T.E.X.T)",summary:"Uses the C.O.N.T.E.X.T. framework to teach students to write effective AI prompts.",tags:["writing","reflection"],time:"10-20 min",procedure:["Introduce the C.O.N.T.E.X.T. acronym","Students draft a prompt for a real task","Evaluate the prompt using each component","Revise and compare the quality of AI outputs"],url:"https://learn.k20center.ou.edu/strategy/5080"},
+  {id:16,name:"AI Writing Partner",summary:"Students use AI chatbots as collaborative writing partners to reflect, revise, and expand their drafts.",tags:["writing","reflection"],time:"20-30 min",procedure:["Students write an initial draft independently","Share the draft with an AI chatbot for feedback","Compare AI suggestions to the original","Revise with intentional choices — not blind acceptance"],url:"https://learn.k20center.ou.edu/strategy/5123"},
+  {id:17,name:"Airplane Landing",summary:"Students prepare responses beforehand and share in a preset sequence so no voice gets crowded out.",tags:["discussion","quick"],time:"< 10 min",procedure:["Assign response order before the discussion begins","All students prepare their answer","Share in sequence without interruption","Debrief: what patterns appeared?"],url:"https://learn.k20center.ou.edu/strategy/78"},
+  {id:18,name:"Always, Sometimes, or Never True",summary:"Students evaluate statements to expose overgeneralizations or undergeneralizations about a concept.",tags:["reflection","discussion"],time:"< 10 min",procedure:["Prepare 4-6 statements about the concept","Students categorize each as Always, Sometimes, or Never True","Share reasoning with a partner","Discuss as a class what the exceptions reveal"],url:"https://learn.k20center.ou.edu/strategy/145"},
+  {id:19,name:"Anchor Charts",summary:"Class collaboratively creates a reference poster with key ideas, mnemonics, and visuals about a topic.",tags:["discussion"],time:"10-20 min",procedure:["Determine the topic and brainstorm collectively","Students contribute words and pictures","Build the chart visible to all","Hang it for ongoing reference and revision"],url:"https://learn.k20center.ou.edu/strategy/58"},
+  {id:20,name:"Annotating Text",summary:"Students identify difficult passages in a text and seek to explain them through close, purposeful reading.",tags:["reflection","writing"],time:"20-30 min",procedure:["Preview the text structure and length","Highlight confusing or significant passages","Pairs discuss and explain their markings","Write brief annotations in the margins"],url:"https://learn.k20center.ou.edu/strategy/114"},
+  {id:21,name:"Anticipate the Bot",summary:"Students write their own summary first, then compare it against an AI-generated summary and analyze differences.",tags:["writing","reflection"],time:"10-20 min",procedure:["Students write their own summary before seeing AI output","Generate an AI summary of the same content","Compare the two versions side by side","Discuss what the AI got wrong, missed, or oversimplified"],url:"https://learn.k20center.ou.edu/strategy/3545"},
+  {id:22,name:"Anticipation Guide",summary:"Students agree or disagree with statements before learning, then revisit their answers afterward.",tags:["reflection"],time:"10-20 min",procedure:["Create 5-8 statements about the upcoming content","Students respond agree/disagree individually","Complete the instruction or reading","Revisit to see what changed and discuss why"],url:"https://learn.k20center.ou.edu/strategy/2364"},
+  {id:23,name:"Appointment Clocks",summary:"Students make 'appointments' at different times on a clock template and meet those partners for discussions.",tags:["movement","discussion"],time:"20-30 min",procedure:["Give each student a clock template","Students write partner names at each hour slot","Teacher calls a time during the lesson","Students find their partner and discuss the prompt"],url:"https://learn.k20center.ou.edu/strategy/124"},
+  {id:24,name:"Around the World",summary:"Questions are posted non-sequentially around the room. Students use each answer to navigate to the next.",tags:["movement","discussion"],time:"20-30 min",procedure:["Post question cards with answer-direction clues around the room","Students start at any card","Their answer directs them to the next card","Continue until the full circuit is complete"],url:"https://learn.k20center.ou.edu/strategy/3234"},
+  {id:25,name:"Back-to-Back Drawing",summary:"Partners sit back-to-back: one describes an image while the other draws, testing communication precision.",tags:["discussion","movement"],time:"10-20 min",procedure:["Partners sit back-to-back with separate papers","Partner A describes a content-related image without naming it","Partner B draws based on description alone","Compare and discuss where communication broke down"],url:"https://learn.k20center.ou.edu/strategy/88"},
+  {id:26,name:"Beach Ball Talk and Toss",summary:"Students toss a beach ball with prompts and answer the question where their thumb lands.",tags:["movement","discussion","quick"],time:"10-20 min",procedure:["Write prompts on sections of the beach ball","Toss the ball around the room","Answer the prompt nearest your thumb when caught","Toss to the next student"],url:"https://learn.k20center.ou.edu/strategy/3049"},
+  {id:27,name:"Cut It Out",summary:"Groups summarize content, create illustrations, and record a brief video demonstrating their expertise on a research or recently covered topic.",tags:["discussion","reflection"],time:"30+ min",procedure:["Groups select or are assigned a topic to demonstrate","Collaboratively summarize key content","Create illustrations or visual supports","Record a brief video presenting their expertise"],url:"https://learn.k20center.ou.edu/strategy/2482"},
+  {id:28,name:"Bento Box",summary:"Students synthesize understanding of an event, text, or period by creating a single composite image from multiple components.",tags:["reflection","writing"],time:"20-30 min",procedure:["Identify 4-6 key elements to represent","Each box section represents one element","Students draw or label each section","Present and explain the overall image and its structure"],url:"https://learn.k20center.ou.edu/strategy/1128"},
+  {id:29,name:"Blackout Poetry",summary:"Students black out most words on a page and leave only selected words to create a thematic poem.",tags:["writing","reflection"],time:"20-30 min",procedure:["Provide a printed page of content-related text","Students read and identify words that resonate","Black out all other words with a marker","Share the resulting poem and explain the choices made"],url:"https://learn.k20center.ou.edu/strategy/84"},
+  {id:30,name:"Boards Up",summary:"Small groups compete to answer review questions using mini whiteboards, revealing all answers simultaneously.",tags:["quick","discussion"],time:"20-30 min",procedure:["Divide into small groups with one whiteboard each","Teacher reads a review question","Groups confer quietly and write their answer","All boards go up simultaneously — discuss any disagreements"],url:"https://learn.k20center.ou.edu/strategy/5243"},
+  {id:31,name:"C.E.R.T.I.fy Your Thinking",summary:"Extended argumentation: Claim, Evidence, Reasoning, Test through debate, then Improve.",tags:["discussion","reflection","writing"],time:"20-30 min",procedure:["Make a clear Claim","Find supporting Evidence","Write Reasoning connecting them","Test by sharing and debating, then Improve based on feedback"],url:"https://learn.k20center.ou.edu/strategy/827"},
+  {id:32,name:"C.R.U.S.H. & Smush",summary:"Circle vocabulary, Read, Underline known words, Star main ideas, Highlight evidence, Summarize.",tags:["reflection","writing"],time:"20-30 min",procedure:["Circle new vocabulary","Read using context for meaning","Underline words you already know","Star main ideas, Highlight evidence, then Smush into a summary"],url:"https://learn.k20center.ou.edu/strategy/821"},
+  {id:33,name:"Caption This",summary:"Students analyze a content-related image and write a caption to demonstrate their understanding.",tags:["writing","quick"],time:"10-20 min",procedure:["Display a content-relevant photograph or image","Students analyze independently","Write a caption that shows content understanding","Share and compare captions across the class"],url:"https://learn.k20center.ou.edu/strategy/82"},
+  {id:34,name:"Card Matching",summary:"Students find pairs of cards that share a relationship, revealing understanding and surfacing misconceptions.",tags:["quick"],time:"10-20 min",procedure:["Create matching card decks with related pairs","Students work in small groups","Find cards that match and explain the relationship","Listen to reasoning — it reveals misconceptions"],url:"https://learn.k20center.ou.edu/strategy/1837"},
+  {id:35,name:"Card Sort",summary:"Students organize concept cards into categories and justify their reasoning. Great for prior knowledge.",tags:["discussion"],time:"10-20 min",procedure:["Prepare cards aligned to content concepts","Provide headers or let students create their own categories","Students sort and discuss their choices","Groups share decisions and reasoning with the class"],url:"https://learn.k20center.ou.edu/strategy/147"},
+  {id:36,name:"Categorical Highlighting",summary:"Students actively read a text and annotate information fitting into predetermined color-coded categories.",tags:["reflection","writing"],time:"10-20 min",procedure:["Assign 3-4 color categories before reading","Students read and highlight accordingly","Compare highlights with a partner","Discuss what each category reveals about the text"],url:"https://learn.k20center.ou.edu/strategy/192"},
+  {id:37,name:"Chain Notes",summary:"A note is passed around the room with each student adding one idea to build a collaborative chain response.",tags:["discussion","quick"],time:"< 10 min",procedure:["Start a note with a prompt at the top","Pass to the next student on signal","Each student adds one new idea without repeating","Read the full chain aloud at the end"],url:"https://learn.k20center.ou.edu/strategy/52"},
+  {id:38,name:"Chalk Talk",summary:"Silent strategy where students respond to prompts by writing or drawing only. No verbal communication.",tags:["reflection","writing"],time:"10-20 min",procedure:["The activity is done entirely in silence","Post prompts on papers around the room","Students respond only by writing or drawing","Debrief verbally after the silent round"],url:"https://learn.k20center.ou.edu/strategy/197"},
+  {id:39,name:"Chant It, Sing It, Rap It",summary:"Groups use rhythm and music to review content through chants, songs, or raps.",tags:["quick","discussion"],time:"10-20 min",procedure:["Introduce the content to be reviewed","Groups choose chant, song, or rap format","Incorporate key vocabulary and concepts","Perform for the class"],url:"https://learn.k20center.ou.edu/strategy/143"},
+  {id:40,name:"Chat Stations",summary:"Students rotate through discussion stations with distinct prompts, taking notes at each stop.",tags:["movement","discussion"],time:"30+ min",procedure:["Set up 4-6 stations with different discussion prompts","Groups rotate on a timer","Discuss and record key points at each station","Debrief patterns visible across all stations"],url:"https://learn.k20center.ou.edu/strategy/944"},
+  {id:41,name:"Chatty Chatbot",summary:"Students prompt an AI to simulate a conversation with a famous historical or fictional character.",tags:["discussion","reflection"],time:"10-20 min",procedure:["Choose a historical or fictional figure relevant to content","Students craft prompts for the AI to roleplay as that character","Analyze the accuracy and perspective of responses","Discuss what the AI got right, wrong, or oversimplified"],url:"https://learn.k20center.ou.edu/strategy/3915"},
+  {id:42,name:"Choice Boards",summary:"Grid of activities where students select what to complete, promoting differentiation and agency.",tags:["reflection"],time:"30+ min",procedure:["Create an activity grid with varied tasks","Assign point values if using a mastery approach","Students select activities to reach their goal","Track and share progress"],url:"https://learn.k20center.ou.edu/strategy/73"},
+  {id:43,name:"Circle Maps",summary:"Students brainstorm descriptors for a central term using a two-ring graphic organizer.",tags:["quick","reflection"],time:"10-20 min",procedure:["Write the central term in the inner circle","Record descriptors in the outer ring","Share in pairs or small groups","Connect the map to the lesson's key ideas"],url:"https://learn.k20center.ou.edu/strategy/159"},
+  {id:44,name:"Claim Cards",summary:"Students receive claim cards, find evidence to support or refute them, and select the strongest claim.",tags:["discussion","reflection"],time:"20-30 min",procedure:["Distribute claim cards to small groups","Find evidence to support or challenge each claim","Others add counterarguments","Groups select and defend the strongest claim"],url:"https://learn.k20center.ou.edu/strategy/160"},
+  {id:45,name:"Claim Parade",summary:"Each student writes one claim on a card, walks around sharing it, collects feedback, then refines it.",tags:["movement","writing"],time:"10-20 min",procedure:["Each student writes a content claim on an index card","Walk around sharing claims with classmates","Collect one piece of written feedback per person visited","Return to seat and refine the claim based on feedback"],url:"https://learn.k20center.ou.edu/strategy/156"},
+  {id:46,name:"Claim, Evidence, Reasoning (CER)",summary:"Students make a claim, support it with evidence, and explain the reasoning that connects them.",tags:["writing","reflection"],time:"20-30 min",procedure:["Analyze data, text, or a phenomenon","Make a clear, specific Claim","Find concrete Evidence to support it","Write Reasoning that explicitly connects evidence to the claim"],url:"https://learn.k20center.ou.edu/strategy/156"},
+  {id:47,name:"Cognitive Comics",summary:"Students create short comics to artistically express their understanding of a concept.",tags:["writing","reflection"],time:"30+ min",procedure:["Define the concept or experience to represent","Students sketch a 4-6 panel comic sequence","Include dialogue, labels, or captions that show content knowledge","Share and explain the artistic choices made"],url:"https://learn.k20center.ou.edu/strategy/198"},
+  {id:48,name:"Collaborative Word Clouds",summary:"Students input words into a live shared word cloud to visualize class thinking about a topic.",tags:["quick","discussion"],time:"< 10 min",procedure:["Set up a live word cloud tool (Mentimeter, Jamboard, etc.)","Pose a prompt and share the link","Students submit words or short phrases","Discuss patterns and dominant ideas visible in the cloud"],url:"https://learn.k20center.ou.edu/strategy/103"},
+  {id:49,name:"Concept Attainment",summary:"Students examine labeled examples and non-examples of a concept to inductively arrive at its definition.",tags:["discussion","reflection"],time:"20-30 min",procedure:["Present two columns: Yes and No examples","Students observe patterns silently","Hypothesize the rule that separates Yes from No","Test the hypothesis with new examples"],url:"https://learn.k20center.ou.edu/strategy/147"},
+  {id:50,name:"Concept Card Mapping",summary:"Students organize vocabulary cards and illustrate connections between concepts using labeled arrows.",tags:["discussion"],time:"20-30 min",procedure:["Provide term cards and blank linking cards","Students add connecting words on blank cards","Organize into a concept map structure","Connect terms with labeled relationship arrows"],url:"https://learn.k20center.ou.edu/strategy/123"},
+  {id:51,name:"Consensus Cards",summary:"Groups discuss a debatable statement and must reach full consensus before writing their shared position.",tags:["discussion"],time:"10-20 min",procedure:["Present a debatable statement to each group","Groups discuss until all members genuinely agree","Write the consensus position with shared reasoning","Share and compare positions across groups"],url:"https://learn.k20center.ou.edu/strategy/160"},
+  {id:52,name:"Cornell Notes System",summary:"Note-taking with main ideas in left column, details on right, and a synthesis summary at the bottom.",tags:["writing","reflection"],time:"20-30 min",procedure:["Draw an upside-down T on the page","Write details and notes in the right column","Identify key concepts for the left column after class","Synthesize a summary at the bottom"],url:"https://learn.k20center.ou.edu/strategy/56"},
+  {id:53,name:"Critical Thinking Cube",summary:"Students roll a cube and respond to prompts: Describe, Compare, Associate, Analyze, Apply, and Argue.",tags:["discussion","reflection"],time:"10-20 min",procedure:["Create or obtain a 6-prompt cube","Roll the cube individually or in groups","Respond to the face-up prompt using content knowledge","Discuss and compare responses"],url:"https://learn.k20center.ou.edu/strategy/1583"},
+  {id:54,name:"CUS and Discuss",summary:"Circle new words, Underline supporting details, Star main ideas, then discuss annotations with a partner.",tags:["discussion","reflection"],time:"10-20 min",procedure:["Circle unfamiliar vocabulary","Underline supporting details","Star the main ideas throughout the text","Compare annotations with a partner and discuss"],url:"https://learn.k20center.ou.edu/strategy/162"},
+  {id:55,name:"Data Talk",summary:"Display a graph or data set with no context and have students generate observations, questions, and inferences.",tags:["discussion","reflection"],time:"10-20 min",procedure:["Display a graph or data set — no title, no context given","Students record what they notice and wonder","Share observations without judgment","Reveal the context and compare to initial interpretations"],url:"https://learn.k20center.ou.edu/strategy/1201"},
+  {id:56,name:"Double Bubble Map",summary:"Graphic organizer using connected circles to compare and contrast two distinct concepts side by side.",tags:["reflection"],time:"10-20 min",procedure:["Draw two large circles with a shared overlap area","List characteristics unique to each concept in outer circles","List shared characteristics in the overlapping center","Summarize the key difference and most important similarity"],url:"https://learn.k20center.ou.edu/strategy/3035"},
+  {id:57,name:"Driving Question Board",summary:"Students post questions about a phenomenon on a class board, then group and prioritize for inquiry.",tags:["discussion"],time:"20-30 min",procedure:["Present an anchoring phenomenon","Students write questions on sticky notes","Add all questions to a shared board","Group and prioritize questions to drive investigation"],url:"https://learn.k20center.ou.edu/strategy/1511"},
+  {id:58,name:"Elbow Partners",summary:"Students turn to the person next to them to discuss a prompt. Quick, low-prep, no materials needed.",tags:["discussion","quick"],time:"< 10 min",procedure:["Present a prompt or question","Students turn to their elbow partner","Allow 2-3 minutes to discuss","Call on a few pairs to share with the class"],url:"https://learn.k20center.ou.edu/strategy/116"},
+  {id:59,name:"Exit Slip Variety Pack",summary:"Rotate among five exit formats — connection, question, summary, sketch, and self-rating — to keep reflection fresh.",tags:["reflection","writing","quick"],time:"< 10 min",procedure:["Choose one format: Connection, Question, Summary, Sketch, or 1-5 Rating","Students complete their exit slip individually","Collect and sort by response type","Use patterns to open the next class"],url:"https://learn.k20center.ou.edu/strategy/125"},
+  {id:60,name:"Expert Stay and Stray",summary:"Groups create a product, one expert stays to explain while others visit different groups to learn.",tags:["movement","discussion"],time:"20-30 min",procedure:["Groups work on assigned task or topic","Designate one expert to stay at the station","Others stray to visit and learn from other groups","Return and share what was learned from straying"],url:"https://learn.k20center.ou.edu/strategy/2650"},
+  {id:61,name:"First Turn / Last Turn",summary:"Students highlight meaningful items, share without comment, the group responds, and the original sharer goes last.",tags:["discussion"],time:"20-30 min",procedure:["Form groups of 4-6","Each student highlights 3-4 meaningful items","Share one item without explanation","Others respond round-robin, then the original sharer responds last"],url:"https://learn.k20center.ou.edu/strategy/50"},
+  {id:62,name:"First Word Last Word",summary:"Create acrostic poems from a topic word before and after instruction to show how thinking changed.",tags:["reflection","writing","quick"],time:"< 10 min",procedure:["Write the topic word vertically (First Word)","Create an acrostic poem before instruction","Complete the learning activity","Create a new acrostic afterward (Last Word) and compare the two"],url:"https://learn.k20center.ou.edu/strategy/148"},
+  {id:63,name:"Fishbowl",summary:"Inner circle discusses while outer circle observes and takes notes, then outer asks one clarifying question each.",tags:["discussion"],time:"20-30 min",procedure:["Select 4-6 students for the inner circle","Inner circle discusses the prompt or text","Outer circle observes and takes structured notes","Each outer circle member asks one clarifying question"],url:"https://learn.k20center.ou.edu/strategy/3053"},
+  {id:64,name:"Fist to Five",summary:"Quick check where students show 0-5 fingers to indicate their level of understanding or agreement.",tags:["quick","reflection"],time:"< 10 min",procedure:["Introduce the topic or check point","Students show fingers: 0 = no understanding, 5 = can teach it","Quickly scan the room","Pair students showing 0-1 with students showing 4-5"],url:"https://learn.k20center.ou.edu/strategy/68"},
+  {id:65,name:"Fold the Line",summary:"Line up by agreement level, discuss with neighbors, then fold so opposite opinions face each other.",tags:["movement","discussion"],time:"10-20 min",procedure:["Students line up by level of agreement with a statement","Briefly discuss with neighbors on either side","Fold the line so the two ends meet","Debate with the new partner from the opposite side"],url:"https://learn.k20center.ou.edu/strategy/171"},
+  {id:66,name:"Four A's Protocol",summary:"Students respond to a text by identifying Assumptions, Agreements, Arguments to push back on, and Aspirations.",tags:["discussion","reflection"],time:"20-30 min",procedure:["Read a shared text in advance","Each student identifies one example of each A","Share in small groups in round-robin format","Discuss: which A generated the most energy?"],url:"https://learn.k20center.ou.edu/strategy/197"},
+  {id:67,name:"Four Corners",summary:"Students move to corners labeled with opinion positions. Promotes movement and hearing diverse views.",tags:["movement","discussion"],time:"10-20 min",procedure:["Label four corners: Strongly Agree, Agree, Disagree, Strongly Disagree","Present a statement","Students move to their corner","Groups discuss reasoning, then share with the class"],url:"https://learn.k20center.ou.edu/strategy/138"},
+  {id:68,name:"Frayer Model",summary:"Four-section vocabulary organizer with definition, characteristics, examples, and non-examples.",tags:["reflection","writing"],time:"10-20 min",procedure:["Draw a square divided into four quadrants","Write the term in the center","Fill in: Definition, Characteristics, Examples, Non-Examples","Share and compare models with a partner"],url:"https://learn.k20center.ou.edu/strategy/159"},
+  {id:69,name:"Gallery Walk / Carousel",summary:"Students rotate around the room viewing and responding to posted work or prompts at each station.",tags:["movement","discussion"],time:"20-30 min",procedure:["Post work or prompts around the room","Groups rotate to each station on a timer","View and leave written feedback or responses","Return to original posting to read feedback received"],url:"https://learn.k20center.ou.edu/strategy/118"},
+  {id:70,name:"Gist",summary:"Summarize content in 28 words or fewer using who, what, when, where, why, and how.",tags:["writing","quick"],time:"< 10 min",procedure:["Identify the 5W+H elements in the content","Draft a summary of 28 words or fewer","Revise to ensure all key elements are captured","Share and compare with a partner"],url:"https://learn.k20center.ou.edu/strategy/3289"},
+  {id:71,name:"Give Me Five",summary:"Five students share reflections while classmates raise hands to signal similar thinking.",tags:["discussion","quick"],time:"< 10 min",procedure:["Provide a reflection prompt","Call on five volunteers to respond","Others raise their hand if they had a similar thought","Count common responses on five fingers"],url:"https://learn.k20center.ou.edu/strategy/150"},
+  {id:72,name:"Give, Get, Reflect",summary:"Write a response, move around sharing and collecting peers' ideas, then reflect on how thinking shifted.",tags:["movement","discussion","reflection"],time:"10-20 min",procedure:["Write initial response in the Give column","Move around to share with classmates","Record others' responses in the Get column","Return to seat and Reflect on what changed"],url:"https://learn.k20center.ou.edu/strategy/2184"},
+  {id:73,name:"GUS Method",summary:"Students self-assess after answering: Guessed, Unsure, or Sure about their response.",tags:["reflection","quick"],time:"< 10 min",procedure:["Pose a question or problem","Students answer independently","Mark G (Guessed), U (Unsure), or S (Sure)","Sure students partner with Guessed or Unsure students"],url:"https://learn.k20center.ou.edu/strategy/76"},
+  {id:74,name:"Haiku Summary",summary:"Students write a 5-7-5 haiku to summarize a concept, forcing precise word selection and synthesis.",tags:["writing","reflection","quick"],time:"< 10 min",procedure:["Review the 5-7-5 syllable structure","Students draft a haiku about the lesson's central concept","Share in pairs and check syllable counts","Select the most accurate and interesting examples to share"],url:"https://learn.k20center.ou.edu/strategy/117"},
+  {id:75,name:"Hexagonal Thinking",summary:"Students arrange concept hexagons and explain the relationship at each shared edge between two concepts.",tags:["discussion","reflection"],time:"20-30 min",procedure:["Give each group a set of concept hexagons","Students arrange hexagons so related concepts share an edge","Verbally explain each connection made","Photograph the arrangement and present the most surprising link"],url:"https://learn.k20center.ou.edu/strategy/123"},
+  {id:76,name:"I Have Who Has",summary:"Chain game where students read answer/question pairs from cards until the circuit is complete.",tags:["quick","movement"],time:"< 10 min",procedure:["Create paired answer/question cards for the full class","Shuffle and distribute one card per student","Starting card reads its question aloud","Student with the matching answer responds and reads their question — repeat until done"],url:"https://learn.k20center.ou.edu/strategy/1497"},
+  {id:77,name:"I Used to Think... But Now I Know",summary:"Students compare thinking before and after instruction in a simple two-column format.",tags:["reflection"],time:"10-20 min",procedure:["Divide paper into two columns","Before instruction: complete I Used to Think...","Complete the instruction or reading","Write But Now I Know... and discuss what changed and why"],url:"https://learn.k20center.ou.edu/strategy/137"},
+  {id:78,name:"Identity Chart",summary:"Graphic organizer to build deep understanding of a person, place, or concept through layered characteristics.",tags:["reflection","writing"],time:"10-20 min",procedure:["Draw a circle with the topic name inside","Add outward arrows from the center","Write characteristics at the end of each arrow","Continue layering until understanding is rich and nuanced"],url:"https://learn.k20center.ou.edu/strategy/2729"},
+  {id:79,name:"Inside-Outside Circle",summary:"Two concentric circles rotate to create structured partner discussions with multiple classmates in quick succession.",tags:["movement","discussion"],time:"10-20 min",procedure:["Form two concentric circles facing each other","Inner and outer circle partners discuss a prompt","Outer circle rotates one position on signal","Repeat with new partners and a new or the same prompt"],url:"https://learn.k20center.ou.edu/strategy/196"},
+  {id:80,name:"Inverted Pyramid",summary:"Discuss in pairs, then quads, then whole class. Builds confidence by rehearsing ideas before larger groups.",tags:["discussion"],time:"20-30 min",procedure:["Pairs analyze or discuss a question first","Two pairs join to form a group of four","Groups may combine further","Culminates in whole-class discussion with built confidence"],url:"https://learn.k20center.ou.edu/strategy/173"},
+  {id:81,name:"Jigsaw",summary:"Each student masters one section of content, then teaches it to a mixed group where everyone is an expert.",tags:["discussion"],time:"30+ min",procedure:["Divide content into equal-sized sections","Students become experts in their assigned section","Form mixed groups with one expert per section","Each expert teaches their section to the group"],url:"https://learn.k20center.ou.edu/strategy/179"},
+  {id:82,name:"K.I.M.S.",summary:"Vocabulary strategy: Key word, Important information, Memory clue, and Sentence using the term.",tags:["writing"],time:"10-20 min",procedure:["K: Write the Key term","I: Record Important information or definition","M: Add a Memory clue — drawing or connection","S: Write a Sentence using the term in context"],url:"https://learn.k20center.ou.edu/strategy/780"},
+  {id:83,name:"KWHL Graphic Organizer",summary:"Know, Want to know, How to find it, what was Learned — guides inquiry and makes thinking visible.",tags:["reflection"],time:"20-30 min",procedure:["K: What do I already Know?","W: What do I Want to know?","H: How will I find out?","L: What did I Learn? — completed after instruction"],url:"https://learn.k20center.ou.edu/strategy/127"},
+  {id:84,name:"Last One Standing",summary:"Students stand, commit to a corner based on their answer choice, and sit down when their answer is eliminated.",tags:["movement","quick"],time:"< 10 min",procedure:["Post four answer choices in four corners of the room","Students stand and move to their chosen corner","Eliminate wrong answers one at a time","Students sit when their answer is eliminated — last standing wins"],url:"https://learn.k20center.ou.edu/strategy/3125"},
+  {id:85,name:"Lines of Agreement",summary:"Students choose a side on a two-answer prompt and form two facing lines to defend their arguments.",tags:["movement","discussion"],time:"10-20 min",procedure:["Present a two-choice statement","Students commit to a side and form two facing lines","Each student shares their reasoning","Partners challenge each other's reasoning and discuss"],url:"https://learn.k20center.ou.edu/strategy/165"},
+  {id:86,name:"Looks Like, Sounds Like, Feels Like",summary:"Define abstract concepts by describing what they look, sound, and feel like in concrete terms.",tags:["discussion"],time:"10-20 min",procedure:["Create three columns for the concept","Ask: what does this look like in practice?","What does it sound like in a classroom?","What does it feel like for a learner?"],url:"https://learn.k20center.ou.edu/strategy/88"},
+  {id:87,name:"Magnetic Statements",summary:"Students respond to provocative statements designed to attract strong opinions and productive disagreement.",tags:["discussion"],time:"10-20 min",procedure:["Craft a genuinely debatable statement about the content","Students write their initial position and reasoning","Share in pairs or small groups","Revisit their position after hearing others — did they move?"],url:"https://learn.k20center.ou.edu/strategy/2364"},
+  {id:88,name:"Muddiest Point",summary:"Students write the most confusing part of a lesson for a fast, anonymous misconception check.",tags:["reflection","quick"],time:"< 10 min",procedure:["Ask students to identify their muddiest point","Students write it on a card or slip","Collect anonymously","Review and address the top confusions at the next class"],url:"https://learn.k20center.ou.edu/strategy/109"},
+  {id:89,name:"My Favorite Mistake",summary:"Teacher shares an anonymous incorrect answer, highlights its reasoning, and class works toward the correction.",tags:["discussion"],time:"< 10 min",procedure:["Give a practice problem","Collect and scan for a revealing wrong answer","Share it anonymously — without shame","Work out the correction together and name the misconception"],url:"https://learn.k20center.ou.edu/strategy/115"},
+  {id:90,name:"Mystery Number / Mystery Word",summary:"Students ask yes/no questions to identify a hidden number, word, or concept — practicing precise academic language.",tags:["discussion","quick"],time:"< 10 min",procedure:["Teacher or student selects a mystery word or concept","Class asks yes/no questions only","Track questions and answers publicly","Discuss the reasoning strategy that led to the answer"],url:"https://learn.k20center.ou.edu/strategy/3615"},
+  {id:91,name:"Numbered Heads Together",summary:"Number off in groups, discuss as a team, then teacher calls a random number — everyone must be ready.",tags:["discussion"],time:"10-20 min",procedure:["Students number off 1-4 in groups","Teacher poses a question","Groups discuss and ensure everyone knows the answer","Teacher calls a number; that person shares for the group"],url:"https://learn.k20center.ou.edu/strategy/2476"},
+  {id:92,name:"One-Pager",summary:"Create a single page combining text, images, quotes, and design to show deep understanding of a topic.",tags:["writing","reflection"],time:"30+ min",procedure:["Choose 3-5 key elements to represent","Design the layout to reflect meaning — not just fill space","Include quotes, images, symbols, and connections","Share and explain the design choices to a partner"],url:"https://learn.k20center.ou.edu/strategy/141"},
+  {id:93,name:"Paired Texts H-Chart",summary:"Analyze two texts on either side of an H-chart, then synthesize a third perspective in the middle.",tags:["writing","reflection"],time:"30+ min",procedure:["Research and record Text 1 in the left leg","Research and record Text 2 in the right leg","Identify connections and tensions in the crossbar","Write a synthesis statement as a 'third text'"],url:"https://learn.k20center.ou.edu/strategy/132"},
+  {id:94,name:"Pass the Problem",summary:"Pairs partially solve a problem then exchange with another pair who continues and may revise.",tags:["discussion"],time:"10-20 min",procedure:["Pairs work on a problem and get partially through","Exchange papers with another pair on signal","Continue from where the first pair stopped","Return, compare solutions, and justify any differences"],url:"https://learn.k20center.ou.edu/strategy/151"},
+  {id:95,name:"Pecha Kucha",summary:"Students present exactly 20 slides for 20 seconds each, building discipline in concise communication.",tags:["discussion"],time:"30+ min",procedure:["Students prepare 20 slides on an assigned topic","Each slide auto-advances after 20 seconds — no pausing","Present to a small group or the whole class","Debrief: what had to be cut, and why?"],url:"https://learn.k20center.ou.edu/strategy/3748"},
+  {id:96,name:"Philosophical Chairs",summary:"Students move to agree or disagree sides and defend positions with evidence. May switch sides if persuaded.",tags:["movement","discussion"],time:"20-30 min",procedure:["Pose a debatable statement","Students move to Agree or Disagree side","Share using 'I agree/disagree because...'","Students who change their mind physically move sides"],url:"https://learn.k20center.ou.edu/strategy/71"},
+  {id:97,name:"Photo Analysis",summary:"Students analyze a photograph using structured observation, inference, and questioning.",tags:["reflection","discussion"],time:"10-20 min",procedure:["Display a content-related photograph","Observe: what specific details do you notice?","Infer: what context or meaning does this suggest?","Question: what does this image make you want to know?"],url:"https://learn.k20center.ou.edu/strategy/82"},
+  {id:98,name:"POMS: Point of Most Significance",summary:"Students identify the single most significant learning point from a lesson.",tags:["reflection","quick"],time:"< 10 min",procedure:["Ask students to identify their most significant takeaway","Write it down individually","Share aloud — no repeating what someone else said","Collect as formative data for the next lesson"],url:"https://learn.k20center.ou.edu/strategy/101"},
+  {id:99,name:"Preflections",summary:"Students hypothesize about their learning before instruction, then compare to what actually happened.",tags:["reflection"],time:"10-20 min",procedure:["Write expectations and predictions before content begins","Complete the learning activity or reading","Return to preflections and compare","Discuss what was surprising and what was confirmed"],url:"https://learn.k20center.ou.edu/strategy/191"},
+  {id:100,name:"Pyramid Discussion",summary:"Start with individual thinking, then pairs, quads, and whole group to build confidence and depth.",tags:["discussion"],time:"20-30 min",procedure:["Individual: write your initial response","Pairs: share and identify agreements","Quads: compare insights with another pair","Whole class: share the most important insights that emerged"],url:"https://learn.k20center.ou.edu/strategy/173"},
+  {id:101,name:"Quick Write",summary:"Write freely about a topic for 2-10 minutes without concern for grammar or polish. Volume over perfection.",tags:["writing","quick"],time:"< 10 min",procedure:["Set a timer for 2-10 minutes","Write freely about the topic without stopping","No grammar or spelling concerns — just thinking","Share or collect for informal assessment"],url:"https://learn.k20center.ou.edu/strategy/1127"},
+  {id:102,name:"Quiz, Quiz, Trade",summary:"Students quiz each other with flashcards, trade cards, and find new partners. Collaborative review with movement.",tags:["movement","quick"],time:"10-20 min",procedure:["Give each student a flashcard with a question and answer","Find a partner and quiz each other","Switch roles","Trade cards and find a new partner — repeat"],url:"https://learn.k20center.ou.edu/strategy/3086"},
+  {id:103,name:"RAFT",summary:"Role, Audience, Format, Topic — structured writing that builds perspective-taking and authentic voice.",tags:["writing"],time:"20-30 min",procedure:["Create a RAFT menu with multiple row options","Students select or are assigned a row","Write from that Role for that Audience in that Format about the Topic","Share and compare the range of perspectives produced"],url:"https://learn.k20center.ou.edu/strategy/158"},
+  {id:104,name:"Round Robin",summary:"Take turns sharing one idea at a time without elaboration. Generates many ideas quickly and equitably.",tags:["discussion","quick"],time:"10-20 min",procedure:["Pose an open question","Students compile their individual idea lists","Take turns contributing one idea per round","Say 'pass' if done; continue until ideas are exhausted"],url:"https://learn.k20center.ou.edu/strategy/2183"},
+  {id:105,name:"Roundabout Conversations",summary:"Walk in concentric circles, pair when music stops, discuss prompts with rotating partners.",tags:["movement","discussion"],time:"10-20 min",procedure:["Form two concentric circles facing each other","Walk while music plays","Stop and pair when music stops","Discuss the prompt, then rotate on the next round"],url:"https://learn.k20center.ou.edu/strategy/196"},
+  {id:106,name:"S-I-T",summary:"Students identify one Surprising, one Interesting, and one Troubling fact from the content.",tags:["reflection"],time:"10-20 min",procedure:["Select a stimulus — article, video, or data set","Students identify one Surprising fact","Identify one Interesting fact","Identify one Troubling fact, then share and discuss all three"],url:"https://learn.k20center.ou.edu/strategy/926"},
+  {id:107,name:"Save the Last Word for Me",summary:"Students select a compelling passage, share it without comment, others respond, then the selector speaks last.",tags:["discussion","reflection"],time:"20-30 min",procedure:["Students each select and copy one meaningful passage","Share the passage to the group without explanation","Other group members respond to the passage","Original selector explains why they chose it — they get the last word"],url:"https://learn.k20center.ou.edu/strategy/50"},
+  {id:108,name:"See-Think-Wonder",summary:"Students observe an image or artifact and share what they see, what they think, and what they wonder.",tags:["discussion","reflection","quick"],time:"< 10 min",procedure:["Display an image, artifact, or phenomenon","See: students list objective observations only","Think: what might this mean or represent?","Wonder: what questions does it raise?"],url:"https://learn.k20center.ou.edu/strategy/183"},
+  {id:109,name:"Sentence Scramble",summary:"Students organize word cards into grammatically correct sentences and justify their arrangement.",tags:["discussion"],time:"10-20 min",procedure:["Prepare cards with individual words from a complex sentence","Pairs arrange cards into a correct sentence","Agree the sentence is grammatically sound","Share and discuss different valid arrangements"],url:"https://learn.k20center.ou.edu/strategy/4073"},
+  {id:110,name:"Sketch Notes",summary:"Students combine visuals and minimal text to capture key ideas from a lecture or reading.",tags:["writing","reflection"],time:"20-30 min",procedure:["Introduce sketchnoting basics: icons, connectors, and layout","Students listen or read with paper and pen","Capture ideas visually — no full sentences required","Share and compare with a partner to identify gaps"],url:"https://learn.k20center.ou.edu/strategy/198"},
+  {id:111,name:"Snowball Discussion",summary:"Students write a response, crumple it, toss it across the room, then open a classmate's and respond.",tags:["discussion","writing","quick"],time:"< 10 min",procedure:["Students write an initial response to a prompt","Crumple paper into a snowball on signal","Toss across the room","Open someone else's snowball and write a response or addition"],url:"https://learn.k20center.ou.edu/strategy/52"},
+  {id:112,name:"Socratic Seminar",summary:"Student-led text-based discussion where participants build on each other's ideas using direct evidence.",tags:["discussion"],time:"30+ min",procedure:["Assign a text or question in advance","Students come prepared with evidence and questions","Teacher facilitates but does not dominate","Assess quality of contributions, not simply participation count"],url:"https://learn.k20center.ou.edu/strategy/3053"},
+  {id:113,name:"Sounds Right? Sounds Off?",summary:"Students signal thumbs up or down on grammar examples, then discuss why a sentence is right or wrong.",tags:["quick","discussion"],time:"< 10 min",procedure:["Present a sentence on the board","Students signal Right or Off","Ask volunteers to explain their reasoning","Repeat with increasingly tricky examples"],url:"https://learn.k20center.ou.edu/strategy/4991"},
+  {id:114,name:"Spectrum Line",summary:"Students position themselves on a physical continuum between two extremes based on their stance.",tags:["movement","discussion"],time:"10-20 min",procedure:["Define the two extreme positions at either end of the room","Students place themselves on the spectrum","Explain their position to a neighbor","Invite students to move if they are persuaded"],url:"https://learn.k20center.ou.edu/strategy/165"},
+  {id:115,name:"Squiggles",summary:"Turn a random squiggle into a picture, write about it, then partner up to add details through questions.",tags:["writing"],time:"10-20 min",procedure:["Distribute papers with a squiggly line printed on each","Students turn the squiggle into a picture","Write a brief story or description about the picture","Partner asks questions to help add more detail"],url:"https://learn.k20center.ou.edu/strategy/936"},
+  {id:116,name:"Stand Up, Sit Down",summary:"Students share top understandings aloud and sit when their idea is mentioned, building a class-wide list.",tags:["movement","quick"],time:"< 10 min",procedure:["Students write their top 3 understandings from the lesson","Everyone stands","One at a time, share one understanding aloud","Sit when your idea is shared by someone else"],url:"https://learn.k20center.ou.edu/strategy/1771"},
+  {id:117,name:"STAR Notes",summary:"Set up, Take notes, Add clarifications and questions, Review. A complete organized note-taking system.",tags:["writing"],time:"20-30 min",procedure:["Set up: name, date, and title at the top","Take: key facts and definitions during instruction","Add: clarifications, questions, and connections after class","Review: revisit notes regularly for long-term retention"],url:"https://learn.k20center.ou.edu/strategy/69"},
+  {id:118,name:"Step In, Step Out, Step Back",summary:"Analyze perspective by stepping into a character, stepping out for context, then stepping back to reflect.",tags:["reflection"],time:"20-30 min",procedure:["Step In: what might this person feel or think?","Provide additional evidence or context","Step Out: what more do you need to understand?","Step Back: how did your perspective change?"],url:"https://learn.k20center.ou.edu/strategy/1585"},
+  {id:119,name:"Sticky Bars",summary:"Students respond on sticky notes to create a real-time bar graph of class opinions on a prompt.",tags:["reflection","quick"],time:"10-20 min",procedure:["Present a question with a clear scale (e.g., 1-5)","Students write their answer on a sticky note","Place sticky notes in the designated columns","Read and discuss the resulting bar graph together"],url:"https://learn.k20center.ou.edu/strategy/129"},
+  {id:120,name:"Sticky Note Carousel",summary:"Students rotate through posters adding sticky note responses and building on previous contributions.",tags:["movement","reflection"],time:"20-30 min",procedure:["Post large papers around the room with prompts","Students rotate with sticky notes in hand","Read existing notes before adding their own","Final rotation: read all contributions and discuss patterns"],url:"https://learn.k20center.ou.edu/strategy/118"},
+  {id:121,name:"Stoplight",summary:"Students move to Green (expert), Yellow (developing), or Red (confused) zones to self-assess.",tags:["movement","quick"],time:"< 10 min",procedure:["Label three areas Green, Yellow, and Red","Pose a topic or concept","Students move to their self-assessed level","Groups discuss; greens support reds"],url:"https://learn.k20center.ou.edu/strategy/59"},
+  {id:122,name:"Story Map",summary:"Students identify and organize narrative elements — character, setting, problem, events, and resolution.",tags:["reflection","writing"],time:"10-20 min",procedure:["Introduce the story map template sections","Students complete after reading a text","Include character, setting, problem, key events, and resolution","Compare maps and discuss what different readers noticed"],url:"https://learn.k20center.ou.edu/strategy/127"},
+  {id:123,name:"Strategy Harvest",summary:"Solve a problem independently, share your strategy, and collect different approaches from partners.",tags:["discussion"],time:"10-20 min",procedure:["Each student solves and records their approach","Partner A explains their strategy while Partner B listens","Partner B records Partner A's strategy","Switch roles, then compare all strategies harvested"],url:"https://learn.k20center.ou.edu/strategy/135"},
+  {id:124,name:"Synectics",summary:"Students complete analogies drawing on existing knowledge to make creative connections to content.",tags:["reflection"],time:"10-20 min",procedure:["Provide a list of random items or images","Students complete: 'A [concept] is like ___ because...'","Share analogies in pairs","Discuss the most surprising or illuminating connections"],url:"https://learn.k20center.ou.edu/strategy/120"},
+  {id:125,name:"T-Chart",summary:"Simple two-column organizer for comparing concepts, pros and cons, or cause and effect.",tags:["reflection"],time:"10-20 min",procedure:["Fold paper to create two columns","Label each column clearly","Record relevant information in each column","Compare both sides and draw conclusions"],url:"https://learn.k20center.ou.edu/strategy/86"},
+  {id:126,name:"T.A.C.O.S.",summary:"Analyze political cartoons: Title, Action, Caption, Objects and symbols, Summary.",tags:["reflection","quick"],time:"< 10 min",procedure:["T: Read the Title","A: Describe the Action happening","C: Read the Caption carefully","O: Identify Objects and symbols, then S: write a Summary"],url:"https://learn.k20center.ou.edu/strategy/1196"},
+  {id:127,name:"Tea Party",summary:"Students walk around sharing text excerpt cards and make predictions about the full text before reading.",tags:["movement"],time:"10-20 min",procedure:["Write key phrases from a text on individual cards","Distribute one card per student","Students walk and share their card with others","Make predictions about the text before reading it"],url:"https://learn.k20center.ou.edu/strategy/105"},
+  {id:128,name:"Text-Based Seminar",summary:"Small group discussion grounded entirely in textual evidence — every claim must be supported by the text.",tags:["discussion","reflection"],time:"20-30 min",procedure:["Assign and read a shared text in advance","Generate 2-3 text-based discussion questions","Ground every contribution with a quote or page reference","Debrief: what claims were best supported by evidence?"],url:"https://learn.k20center.ou.edu/strategy/114"},
+  {id:129,name:"They Say, I Say Writing",summary:"Two-paragraph argumentative template: summarize what others argue, then add your own informed position.",tags:["writing"],time:"20-30 min",procedure:["Read and analyze a source or argument","Write paragraph 1: what 'they say'","Brainstorm your own informed opinion","Write paragraph 2: what 'I say' in direct response"],url:"https://learn.k20center.ou.edu/strategy/1644"},
+  {id:130,name:"Think Aloud",summary:"Teacher or student verbally narrates their internal thinking process while reading or solving a problem.",tags:["discussion"],time:"10-20 min",procedure:["Select a text or problem to model","Read aloud while narrating your thinking process","Pause to explicitly name the strategies being used","Students try the same approach with a different passage"],url:"https://learn.k20center.ou.edu/strategy/114"},
+  {id:131,name:"Think-Pair-Share",summary:"Think individually, discuss with a partner, then share with the class. A foundational engagement strategy.",tags:["discussion"],time:"10-20 min",procedure:["Pose a question or prompt","Students think silently for 1-2 minutes","Pair with a partner to discuss and refine thinking","Selected pairs share their conclusions with the whole class"],url:"https://learn.k20center.ou.edu/strategy/139"},
+  {id:132,name:"Thinking Notes",summary:"Mark text with symbols: star for main ideas, ! for favorites, ? for questions, ?? for real confusion.",tags:["reflection"],time:"10-20 min",procedure:["Introduce the four symbols and their meanings","Students read independently with pencil in hand","Mark the text as they go","Share and compare markings with a partner"],url:"https://learn.k20center.ou.edu/strategy/178"},
+  {id:133,name:"Three Sticky Notes",summary:"Summarize a reading with one word, one phrase, and one sentence on three separate sticky notes.",tags:["reflection","quick"],time:"10-20 min",procedure:["One word that captures the essence of the reading","One phrase that summarizes a key idea","One sentence that explains significance","Compare in groups and discuss the choices made"],url:"https://learn.k20center.ou.edu/strategy/153"},
+  {id:134,name:"Tic Tac Tell",summary:"Students select three connecting words from a vocabulary grid and write a paragraph using all three.",tags:["writing"],time:"20-30 min",procedure:["Create a 3x3 grid of key vocabulary terms","Students draw a line connecting three terms","Write a paragraph using all three words meaningfully","Share with a peer to check accuracy and clarity"],url:"https://learn.k20center.ou.edu/strategy/1920"},
+  {id:135,name:"TIP Chart",summary:"Collaborative vocabulary chart: Term, Information, and Picture for each new word in the unit.",tags:["discussion"],time:"10-20 min",procedure:["Create three columns: Term, Information, Picture","Add new terms as they emerge in class","Collaborate to write accurate definitions","Add a visual representation for each term"],url:"https://learn.k20center.ou.edu/strategy/185"},
+  {id:136,name:"Turn and Talk",summary:"Students briefly discuss a prompt with a nearby partner before whole-class discussion. Zero prep, high impact.",tags:["discussion","quick"],time:"< 10 min",procedure:["Pose a prompt or question","Students turn to a partner immediately","Allow 60-90 seconds to discuss","Call on a few pairs to share before continuing"],url:"https://learn.k20center.ou.edu/strategy/116"},
+  {id:137,name:"Two Truths and a Lie",summary:"Students write two accurate statements and one plausible misconception about content; classmates identify the lie.",tags:["discussion","reflection","quick"],time:"< 10 min",procedure:["Students write two true statements and one false one about the content","Craft the lie to be plausible — not obvious","Share with a partner or small group","Discuss why the lie was or wasn't convincing — it reveals misconceptions"],url:"https://learn.k20center.ou.edu/strategy/145"},
+  {id:138,name:"Two-Minute Documentaries",summary:"Small groups create two-minute videos presenting responses to a problem, reading, or essential question.",tags:["discussion"],time:"30+ min",procedure:["Present a problem or essential question","Groups plan the narrative arc of their documentary","Record the two-minute segment","Screen all videos and debrief as a class"],url:"https://learn.k20center.ou.edu/strategy/177"},
+  {id:139,name:"Two-Minute Paper",summary:"Students answer one or two focused questions about their learning in exactly two minutes.",tags:["reflection","writing","quick"],time:"< 10 min",procedure:["Display 1-2 targeted questions","Set a two-minute timer","Students write continuously without stopping","Collect papers and share highlights at the next class"],url:"https://learn.k20center.ou.edu/strategy/152"},
+  {id:140,name:"Venn Diagram",summary:"Classic overlapping circles for comparing similarities and differences between two or three concepts.",tags:["reflection"],time:"10-20 min",procedure:["Draw two or three overlapping circles","Label each circle with a concept","List unique characteristics in the outer areas","List shared characteristics in the overlapping sections"],url:"https://learn.k20center.ou.edu/strategy/2918"},
+  {id:141,name:"VlogIt",summary:"Students create short 60-second videos to analyze, research, or reflect on a topic from a chosen angle.",tags:["reflection"],time:"30+ min",procedure:["Present the topic and purpose for the video","Students plan their 60-second content","Record using a phone or device","Screen and discuss as a class"],url:"https://learn.k20center.ou.edu/strategy/2556"},
+  {id:142,name:"What Did I Learn Today?",summary:"End-of-lesson reflection where students describe specifically what is new or expanded in their understanding.",tags:["reflection","writing","quick"],time:"< 10 min",procedure:["Provide 2-3 minutes of reflection time","Students write about one new or expanded piece of learning","Focus on what specifically changed in their thinking","Collect as exit data to inform the next lesson"],url:"https://learn.k20center.ou.edu/strategy/169"},
+  {id:143,name:"Whip Around",summary:"Each student gives a brief, one-sentence response in quick succession around the room. Fast and inclusive.",tags:["discussion","quick"],time:"< 10 min",procedure:["Pose a prompt with a short answer","Go around the room in sequence","Students give one-sentence responses only","No discussion during the whip — debrief after"],url:"https://learn.k20center.ou.edu/strategy/2183"},
+  {id:144,name:"Window Notes",summary:"Organize information in four quadrants: Facts, Feelings, Questions, and Ideas.",tags:["writing","reflection"],time:"20-30 min",procedure:["Fold paper in fourths and label the four panes","Facts: what happened or was stated","Feelings: your emotional or personal response","Questions and Ideas: in the remaining two panes"],url:"https://learn.k20center.ou.edu/strategy/189"},
+  {id:145,name:"Wipeout",summary:"Students use mini whiteboards for quick, visible, erasable formative assessment on any prompt.",tags:["quick","discussion"],time:"10-20 min",procedure:["Provide whiteboards and markers","Present a prompt or problem","Students write or draw responses simultaneously","All boards go up on signal, discuss, then erase and repeat"],url:"https://learn.k20center.ou.edu/strategy/2917"},
+  {id:146,name:"WIS-WIM",summary:"What I See, What It Means — break down graphs and data into observations first, then interpretations.",tags:["reflection"],time:"10-20 min",procedure:["Display a graph or data visualization","What I See: identify trends and features without interpreting","Mark observations with arrows and labels","What It Means: make meaning from what was observed"],url:"https://learn.k20center.ou.edu/strategy/1201"},
+  {id:147,name:"Word Splash",summary:"Key terms appear splashed randomly and students write summaries connecting as many as possible.",tags:["writing","quick"],time:"10-20 min",procedure:["Display 8-12 key terms randomly on screen","Students think about how the words connect","Write a 3-5 sentence summary using the terms","Share summaries and compare connections made"],url:"https://learn.k20center.ou.edu/strategy/199"},
+  {id:148,name:"Would You Rather...?",summary:"Students choose between two equally provocative content-linked options and defend their reasoning.",tags:["discussion","quick"],time:"< 10 min",procedure:["Craft two options that both connect meaningfully to content","Students commit to one choice privately first","Move to designated sides of the room","Share reasoning — the argument is the point, not the answer"],url:"https://learn.k20center.ou.edu/strategy/138"},
+  {id:149,name:"CHAMPs",summary:"Visual classroom management framework: Conversation, Help, Activity, Movement, Participation, Success.",tags:["quick"],time:"< 10 min",procedure:["Define expectations for each CHAMP element","Post expectations visibly before the activity","Review with students before each new activity type","Reference as needed throughout the lesson"],url:"https://learn.k20center.ou.edu/strategy/112"}
+].filter((s,i,arr) => arr.findIndex(x => x.name === s.name) === i)
+ .sort((a, b) => a.name.localeCompare(b.name));
+
+const aiMessages = {
+    quick:[
+        {emoji:"⚡",text:"Under 10 minutes and done. Perfect for the dead zone before the bell."},
+        {emoji:"⏱️",text:"Short on time? This one earns its keep fast."},
+        {emoji:"★",text:"A quick hit that actually sticks. Teachers come back to this one constantly."}
+    ],
+    discussion:[
+        {emoji:"💬",text:"Turns passive listeners into actual participants. Every time."},
+        {emoji:"🗣️",text:"If you want students talking to each other instead of at you, this is it."},
+        {emoji:"🤝",text:"Builds the kind of discourse that makes observation days look easy."}
+    ],
+    reflection:[
+        {emoji:"🪞",text:"Makes thinking visible. Students often surprise themselves with this one."},
+        {emoji:"💭",text:"Metacognition in practice. The research on this is solid."},
+        {emoji:"🧠",text:"The step between covering content and actually learning it."}
+    ],
+    movement:[
+        {emoji:"🏃",text:"Gets them out of seats. Brains work better when bodies move."},
+        {emoji:"✦",text:"For when the energy in the room needs a hard reset."},
+        {emoji:"🎯",text:"Kinesthetic learners finally get a win with this one."}
+    ],
+    writing:[
+        {emoji:"✍️",text:"Writing to learn — not learning to write. There is a difference."},
+        {emoji:"📝",text:"Low stakes, high payoff. No red pens required."},
+        {emoji:"💡",text:"Writing externalizes thinking. This forces that process."}
+    ],
+    default:[
+        {emoji:"★",text:"Solid pick. Versatile across subjects and grade levels."},
+        {emoji:"✦",text:"Teachers who use this one tend to come back to it."},
+        {emoji:"🎯",text:"Tried and tested. Very, very hard to stop."}
+    ]
+};
+
+let state = {
+    tab:'all', filter:null, search:'',
+    favorites: JSON.parse(localStorage.getItem('k20-fav-v2')||'[]'),
+    session: JSON.parse(localStorage.getItem('k20-session')||'[]'),
+    usedCounts: JSON.parse(localStorage.getItem('k20-used')||'{}'),
+    expanded: null
+};
+
+function save(){
+    localStorage.setItem('k20-fav-v2',JSON.stringify(state.favorites));
+    localStorage.setItem('k20-session',JSON.stringify(state.session));
+    localStorage.setItem('k20-used',JSON.stringify(state.usedCounts));
+}
+
+const $ = id => document.getElementById(id);
+const primaryBtn = $('primaryBtn');
+const aiToast = $('aiToast');
+const searchInput = $('searchInput');
+const cardsEl = $('cards');
+const sessionBanner = $('sessionBanner');
+const deckView = $('deckView');
+const deckCards = $('deckCards');
+
+function init(){
+    $('counter').textContent = `${strategies.length} strategies`;
+    updateBadges(); render();
+
+    primaryBtn.addEventListener('click', pickRandom);
+
+    document.querySelectorAll('.filter-chip').forEach(chip => {
+        chip.addEventListener('click', ()=>{
+            const f = chip.dataset.filter;
+            state.filter = state.filter===f ? null : f;
+            document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));
+            if(state.filter) chip.classList.add('active');
+            render();
+        });
+    });
+
+    document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', ()=>{
+            document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+            tab.classList.add('active');
+            state.tab = tab.dataset.tab;
+            render();
+        });
+    });
+
+    searchInput.addEventListener('input', e=>{
+        state.search = e.target.value.toLowerCase();
+        render();
+    });
+
+    $('viewDeckBtn').addEventListener('click', openDeck);
+    $('closeDeck').addEventListener('click', ()=>deckView.classList.remove('visible'));
+}
+
+function pickRandom(){
+    primaryBtn.classList.add('spinning');
+    const filtered = getFiltered();
+    if(!filtered.length){ primaryBtn.classList.remove('spinning'); return; }
+    setTimeout(()=>{
+        const picked = filtered[Math.floor(Math.random()*filtered.length)];
+        state.expanded = picked.id;
+        const tag = picked.tags[0]||'default';
+        const msgs = aiMessages[tag]||aiMessages.default;
+        const msg = msgs[Math.floor(Math.random()*msgs.length)];
+        $('toastEmoji').textContent = msg.emoji;
+        $('toastName').textContent = picked.name;
+        $('toastText').textContent = msg.text;
+        aiToast.classList.add('visible');
+        setTimeout(()=>aiToast.classList.remove('visible'), 2500);
+        render();
+        primaryBtn.classList.remove('spinning');
+        setTimeout(()=>{
+            const card = document.querySelector(`[data-id="${picked.id}"]`);
+            if(card){
+                card.classList.add('highlighted');
+                const tz = document.querySelector('.thumb-zone');
+                const offset = (tz?.offsetHeight||200)+60;
+                window.scrollTo({top: card.getBoundingClientRect().top+window.scrollY-offset, behavior:'smooth'});
+                setTimeout(()=>card.classList.remove('highlighted'),1500);
+            }
+        },100);
+    },500);
+}
+
+function getFiltered(){
+    let list = strategies;
+    if(state.tab==='saved') list = list.filter(s=>state.favorites.includes(s.id));
+    if(state.tab==='session') list = list.filter(s=>state.session.includes(s.id));
+    if(state.filter) list = list.filter(s=>s.tags.includes(state.filter));
+    if(state.search) list = list.filter(s=>
+        s.name.toLowerCase().includes(state.search)||
+        s.summary.toLowerCase().includes(state.search)
+    );
+    return list;
+}
+
+function toggleFavorite(id,e){
+    e.stopPropagation();
+    const i=state.favorites.indexOf(id);
+    if(i>-1) state.favorites.splice(i,1); else state.favorites.push(id);
+    save(); updateBadges(); render();
+}
+
+function toggleSession(id,e){
+    e.stopPropagation();
+    const i=state.session.indexOf(id);
+    if(i>-1) state.session.splice(i,1); else state.session.push(id);
+    save(); updateBadges(); render();
+}
+
+function markUsed(id,e){
+    e.stopPropagation();
+    state.usedCounts[id]=(state.usedCounts[id]||0)+1;
+    save(); render();
+}
+
+function toggleExpand(id){
+    state.expanded = state.expanded===id ? null : id;
+    render();
+}
+
+function updateBadges(){
+    $('savedBadge').textContent = state.favorites.length;
+    $('sessionBadge').textContent = state.session.length;
+    if(state.session.length>0){
+        sessionBanner.classList.add('visible');
+        $('sessionCountLabel').textContent = `${state.session.length} ${state.session.length===1?'strategy':'strategies'}`;
+    } else {
+        sessionBanner.classList.remove('visible');
+    }
+}
+
+function openDeck(){
+    const deck = strategies.filter(s=>state.session.includes(s.id));
+    deckCards.innerHTML = deck.length===0
+        ? '<p style="color:var(--paper);text-align:center;padding:40px 0;font-family:Arial,sans-serif;font-weight:bold;font-size:15px;text-transform:uppercase;letter-spacing:1px;">No strategies in session yet</p>'
+        : deck.map(s=>`
+            <div class="deck-card">
+                <button class="deck-card-remove" onclick="removeFromDeck(${s.id})">✕</button>
+                <div class="deck-card-name">${s.name}</div>
+                <div class="deck-card-summary">${s.summary}</div>
+            </div>
+        `).join('');
+    deckView.classList.add('visible');
+}
+
+window.removeFromDeck = function(id){
+    const i=state.session.indexOf(id);
+    if(i>-1) state.session.splice(i,1);
+    save(); updateBadges(); openDeck();
+};
+
+function render(){
+    const filtered = getFiltered();
+    $('resultsLabel').innerHTML = `<strong>${filtered.length}</strong> ${filtered.length===1?'strategy':'strategies'}`;
+    if(!filtered.length){
+        cardsEl.innerHTML=`
+            <div class="empty-state">
+              <div class="empty-state-inner">
+                <div class="empty-icon">${state.tab==='saved'?'★':state.tab==='session'?'📋':'🔍'}</div>
+                <h3>${state.tab==='saved'?'Nothing saved yet':state.tab==='session'?'Session is empty':'No results'}</h3>
+                <p>${state.tab==='saved'?'Tap ★ on any card to save it':state.tab==='session'?'Tap 📋 on any card to add it':'Try different filters or search terms'}</p>
+              </div>
+            </div>`;
+        return;
+    }
+    cardsEl.innerHTML = filtered.map(s=>{
+        const isFav=state.favorites.includes(s.id);
+        const inSession=state.session.includes(s.id);
+        const isExp=state.expanded===s.id;
+        const used=state.usedCounts[s.id]||0;
+        return `
+        <div class="strategy-card ${isExp?'card-expanded':''}" data-id="${s.id}" onclick="toggleExpand(${s.id})">
+            <div class="card-top">
+                <div style="flex:1;min-width:0">
+                    <h3 class="strategy-name">${s.name}</h3>
+                    <p class="strategy-summary">${s.summary}</p>
+                </div>
+                <div class="card-actions">
+                    <button class="session-btn ${inSession?'active':''}" onclick="toggleSession(${s.id},event)" title="${inSession?'Remove from session':'Add to session'}">📋</button>
+                    <button class="fav-btn ${isFav?'active':''}" onclick="toggleFavorite(${s.id},event)" title="${isFav?'Unsave':'Save'}">★</button>
+                </div>
+            </div>
+            <div class="strategy-meta">
+                <span class="meta-pill time">${s.time}</span>
+                ${s.tags.slice(0,2).map(t=>`<span class="meta-pill">${t}</span>`).join('')}
+            </div>
+            <div class="procedure">
+                <h4 class="procedure-title">How it works</h4>
+                <ol>${s.procedure.map(p=>`<li>${p}</li>`).join('')}</ol>
+                <div class="used-row">
+                    <button class="used-btn" onclick="markUsed(${s.id},event)">✓ Mark as used</button>
+                    <span class="used-count ${used>0?'has-uses':''}">${used>0?`Used ${used}\u00d7`:'Never used'}</span>
+                </div>
+                <a href="${s.url}" target="_blank" class="view-link" onclick="event.stopPropagation()">View on K20 LEARN →</a>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+window.toggleFavorite=toggleFavorite;
+window.toggleSession=toggleSession;
+window.toggleExpand=toggleExpand;
+window.markUsed=markUsed;
+
+// Easter egg (SGA)
+document.getElementById('logoBtn').addEventListener('click', () => {
+    document.getElementById('eggOverlay').classList.add('visible');
+});
+window.closeEgg = function(e) {
+    if (e.target === document.getElementById('eggOverlay')) {
+        document.getElementById('eggOverlay').classList.remove('visible');
+    }
+};
+
+init();
+</script>
+</body>
+</html>
